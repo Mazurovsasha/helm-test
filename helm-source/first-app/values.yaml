@@ -76,18 +76,20 @@ autoscaling:
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
 
+pvc:
+  storage_class: nfs
+  storage_size: 100Mi
+
 # Additional volumes on the output Deployment definition.
-volumes: []
-# - name: foo
-#   secret:
-#     secretName: mysecret
-#     optional: false
+volumes:
+  - name: persistent-storage
+    persistentVolumeClaim:
+      claimName: pv-claim-helm
 
 # Additional volumeMounts on the output Deployment definition.
-volumeMounts: []
-# - name: foo
-#   mountPath: "/etc/foo"
-#   readOnly: true
+volumeMounts:
+  - name: persistent-storage
+    mountPath: "/var/www/html"
 
 nodeSelector: {}
 
