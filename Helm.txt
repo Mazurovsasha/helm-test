@@ -1,0 +1,92 @@
+Куча Хелмов
+https://bitnami.com/stack/joomla/helm
+
+
+We can start from scratch, must-have-list:
+Chart.yaml (https://helm.sh/docs/topics/charts/#the-chartyaml-file )
+templates/
+Values.yaml (https://helm.sh/docs/chart_template_guide/values_files/#helm )
+
+Установка helm
+
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+
+chmod +x get_helm.sh
+
+./get_helm.sh
+
+Создать новыЙ helm с именем first-app
+
+helm create first-app
+
+Собрать пакет helm (получаем /home/sasha/HW/13.k8s.Helm/helm-source/first-app-0.1.0.tgz)
+
+helm package first-app
+
+Установка пакета
+
+helm install first-app --dry-run ../helm-releases/first-app-0.1.0.tgz -n default     # Покажет как будет выглядеть
+helm install first-app ../helm-releases/first-app-0.1.0.tgz -n default               # Установка
+helm install first-app helm-test/first-app --version 0.2.0 -n default               # Установка определенной версии 
+
+Удалить пакет
+
+helm uninstall first-app
+
+
+
+ВЕРСИОННОСТЬ
+
+Настраиваем репозиторий
+
+1. Создаем новый репозиторий
+
+2. Делаем первый commit
+
+3. Настройки > Pages > В разделе Branch выбираем master > Save
+
+
+Закидываем UserAgent в robots.txt  
+echo -e "User-Agent: *\nDisallow: /" > robots.txt    
+
+Генерируем html файл
+helm repo index --url https://mazurovsasha.github.io/helm-test/ .  # Создаем в корне каталога
+
+Что бы на другую машину добавить репозиторый с Helm
+helm repo add helm-test https://mazurovsasha.github.io/helm-test/
+
+Обновить репозитории
+helm repo update
+
+Просмотреть инфу о репозитории
+helm search repo helm-test -l
+
+После создания нового пакета 
+helm repo index --url https://pluhin.github.io/helm-25-23/ --merge index.yaml .
+
+
+
+
+JOOMLA
+
+Создаем БД
+sudo mysql -u root -p
+
+CREATE DATABASE drupaldb;
+CREATE USER 'sasha@%' IDENTIFIED BY 'password';
+GRANT ALL ON drupaldb.* TO 'sasha@%' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
+SHOW GRANTS FOR 'sasha@%';
+
+
+Добавляем репозиторий bitnami в my-repo
+helm repo add my-repo https://charts.bitnami.com/bitnami
+
+Ставим mariadb на другой хост, а не в контейнер (06.Ansible создаем mariadb.yaml и добавляем хост в inv.yaml)
+ansible-playbook -i inv.yaml mariadb.yaml -e name_db=bn_joomla -e user_db=bn_joomla -e pass_db=bn_joomla -l mariadb -u root --ask-pass
+
+sudo apt install mysql-client
+mysql -h 192.168.202.XX -u bn_joomla -p
+
+helm install sa-joomla  --set mariadb.enabled=false,externalDatabase.host=192.168.202.14,externalDatabase.password=bn_joomla,externalDatabase.user=bn_joomla,externalDatabase.database=bn_joomla,global.storageClass=nfs,joomlaUsername=admin,joomlaPassword=joomla,ingress.enabled=true,ingress.hostname=joomla-sa.k8s-7.sa,ingress.annotations="kubernetes.io/ingress.class: nginx"  my-repo/joomla
+
