@@ -1,7 +1,11 @@
-drupalUsername: user
+drupalUsername: sasha
 
 drupalPassword: ""
 
+drupalEmail: mazurovsasha@gmail.com
+
+global:
+  storageClass: "nfs-drupal"
 
 ingress:
 
